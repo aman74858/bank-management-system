@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'SecureBank' %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-bank"></i> SecureBank
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <% if (user.role === 'customer') { %>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/customer/dashboard">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/customer/account">
+                                    <i class="bi bi-wallet2"></i> Account
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="transactionsDropdown" role="button" 
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-arrow-left-right"></i> Transactions
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="transactionsDropdown">
+                                    <li><a class="dropdown-item" href="/customer/deposit">Deposit</a></li>
+                                    <li><a class="dropdown-item" href="/customer/withdraw">Withdraw</a></li>
+                                    <li><a class="dropdown-item" href="/customer/transfer">Transfer</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="/transaction/history">Transaction History</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/customer/statement">
+                                    <i class="bi bi-file-earmark-text"></i> Statement
+                                </a>
+                            </li>
+                        <% } else if (user.role === 'admin') { %>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/admin/dashboard">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/admin/accounts">
+                                    <i class="bi bi-people"></i> Manage Accounts
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/admin/transactions">
+                                    <i class="bi bi-list-check"></i> All Transactions
+                                </a>
+                            </li>
+                        <% } %>
+                    <% } else { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/about">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/contact">Contact</a>
+                        </li>
+                    <% } %>
+                </ul>
+                <ul class="navbar-nav">
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <li class="nav-item">
+                            <span class="navbar-text me-3">
+                                Welcome, <strong><%= user.name %></strong> 
+                                <span class="badge bg-<%= user.role === 'admin' ? 'danger' : 'primary' %>">
+                                    <%= user.role %>
+                                </span>
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light btn-sm" href="/logout">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary btn-sm ms-2" href="/signup">Sign Up</a>
+                        </li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container-fluid p-0">

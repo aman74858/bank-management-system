@@ -1,0 +1,294 @@
+<%- include('../partials/header', { title: 'Transfer Money - SecureBank' }) %>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="bi bi-arrow-left-right"></i> Transfer Money</h3>
+                </div>
+                <div class="card-body">
+                    <% if (error) { %>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    <% } %>
+                    
+                    <% if (success) { %>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill"></i> <%= success %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    <% } %>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card-body text-center">
+    <h6 class="card-title">From Account</h6>
+    <% if (account && account.accountNumber) { %>
+        <h4 class="text-primary"><%= account.accountNumber %></h4>
+        <p class="mb-0">Balance: <strong>₹<%= account.balance ? account.balance.toFixed(2) : '0.00' %></strong></p>
+    <% } else { %>
+        <h4 class="text-danger">No Account Found</h4>
+        <p class="mb-0">Please contact support to create an account.</p>
+    <% } %>
+</div>
+
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">To Account</h6>
+                                    <h4 class="text-success" id="recipientAccountDisplay">Enter account number</h4>
+                                    <p class="mb-0" id="recipientNameDisplay">Recipient name will appear here</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form action="/customer/transfer" method="POST">
+                        <div class="mb-3">
+                            <label for="accountNumber" class="form-label">Recipient Account Number</label>
+                            <input type="text" class="form-control" id="accountNumber" name="accountNumber" 
+                                   placeholder="Enter recipient's account number" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount to Transfer</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="amount" name="amount" 
+                                       placeholder="Enter amount" step="0.01" min="1" required>
+                            </div>
+                            <div class="form-text">Maximum transfer per day: $2,500.00</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="2" placeholder="Add a note about this transfer"></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-arrow-left-right"></i> Transfer Money
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>
+                        <i class="bi bi-info-circle"></i> Transfers are processed immediately. Please verify account details before confirming.
+                    </small>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Transfers</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-3">
+                        <i class="bi bi-receipt display-4 text-muted"></i>
+                        <p class="mt-2 text-muted">No recent transfers</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let verifiedAccount = null;
+    const accountData = {
+        balance: <%= account && account.balance ? account.balance : 0 %>,
+        accountNumber: '<%= account && account.accountNumber ? account.accountNumber : "" %>',
+        hasAccount: <%= account ? 'true' : 'false' %>
+    };
+    
+    const availableBalance = Math.max(0, accountData.balance - 1000);
+    
+    // Check if user has account
+    if (!accountData.hasAccount || !accountData.accountNumber) {
+        showAlert('No account found. Please contact support to create an account.', 'danger');
+        document.getElementById('transferForm').style.display = 'none';
+    }
+
+    // Update available balance display
+    document.addEventListener('DOMContentLoaded', function() {
+        const balanceElement = document.getElementById('availableBalance');
+        if (balanceElement) {
+            balanceElement.textContent = availableBalance.toLocaleString();
+        }
+    });
+
+    // Account verification
+    document.getElementById('verifyBtn').addEventListener('click', async function() {
+        if (!accountData.hasAccount) {
+            showAlert('You need an active account to make transfers', 'danger');
+            return;
+        }
+
+        const accountNumber = document.getElementById('recipientAccount').value.trim();
+        
+        if (!accountNumber || accountNumber.length !== 10) {
+            showAlert('Please enter a valid 10-digit account number', 'danger');
+            return;
+        }
+
+        if (accountNumber === accountData.accountNumber) {
+            showAlert('Cannot transfer to your own account', 'danger');
+            return;
+        }
+
+        const btn = this;
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Verifying...';
+
+        try {
+            const response = await fetch('/customer/verify-account', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ accountNumber })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                verifiedAccount = result.account;
+                document.getElementById('accountDetails').innerHTML = `
+                    <strong>${result.account.userId.name}</strong><br>
+                    Account: ${result.account.accountNumber} (${result.account.accountType.toUpperCase()})
+                `;
+                document.getElementById('verificationResult').classList.remove('d-none');
+                
+                // Enable next step
+                setTimeout(() => goToStep(2), 1000);
+            } else {
+                showAlert(result.error, 'danger');
+            }
+        } catch (error) {
+            console.error('Verification error:', error);
+            showAlert('Verification failed. Please try again.', 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    });
+
+    // Transfer form submission
+    document.getElementById('transferForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        if (!accountData.hasAccount) {
+            showAlert('You need an active account to make transfers', 'danger');
+            return;
+        }
+
+        const amount = parseFloat(document.getElementById('transferAmount').value);
+        const description = document.getElementById('transferDescription').value;
+
+        if (!verifiedAccount) {
+            showAlert('Please verify recipient account first', 'danger');
+            return;
+        }
+
+        if (!amount || amount <= 0) {
+            showAlert('Please enter a valid amount', 'danger');
+            return;
+        }
+
+        if (amount > availableBalance) {
+            showAlert('Insufficient funds', 'danger');
+            return;
+        }
+
+        if (amount > 100000) {
+            showAlert('Amount exceeds per-transaction limit of ₹1,00,000', 'danger');
+            return;
+        }
+
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Processing...';
+
+        try {
+            const response = await fetch('/customer/transfer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    accountNumber: verifiedAccount.accountNumber,
+                    amount: amount,
+                    description: description
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showAlert(result.message, 'success');
+                setTimeout(() => {
+                    window.location.href = '/customer/dashboard';
+                }, 2000);
+            } else {
+                showAlert(result.error, 'danger');
+            }
+        } catch (error) {
+            console.error('Transfer error:', error);
+            showAlert('Transfer failed. Please try again.', 'danger');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    });
+
+    // Update amount in real-time
+    document.getElementById('transferAmount').addEventListener('input', function() {
+        const amount = parseFloat(this.value) || 0;
+        document.getElementById('summaryAmount').textContent = '₹' + amount.toLocaleString();
+        
+        if (verifiedAccount) {
+            document.getElementById('summaryToAccount').textContent = verifiedAccount.accountNumber;
+        }
+    });
+
+    // Step navigation
+    function goToStep(step) {
+        document.querySelectorAll('.step').forEach(s => s.classList.add('d-none'));
+        document.getElementById('step' + step).classList.remove('d-none');
+    }
+
+    // Show alert function
+    function showAlert(message, type) {
+        // Remove existing alerts
+        document.querySelectorAll('.alert').forEach(alert => {
+            if (alert.classList.contains('alert-dismissible')) {
+                alert.remove();
+            }
+        });
+
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const main = document.querySelector('main');
+        const firstChild = main.children[1];
+        main.insertBefore(alertDiv, firstChild);
+        
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+</script>
+
+
+<%- include('../partials/footer') %>

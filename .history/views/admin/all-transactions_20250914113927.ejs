@@ -1,0 +1,687 @@
+<%- include('../partials/header', { title: 'All Transactions - SecureBank Admin' }) %>
+
+<div class="admin-transactions">
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="dashboard-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="dashboard-title">
+                        <i class="fas fa-exchange-alt me-3"></i>All Transactions
+                    </h1>
+                    <p class="dashboard-subtitle">Monitor and manage all system transactions</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="dashboard-actions">
+                        <button class="btn btn-success me-2" onclick="exportTransactions()">
+                            <i class="fas fa-download me-2"></i>Export Data
+                        </button>
+                        <button class="btn btn-primary" onclick="refreshTransactions()">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card success">
+                    <div class="stat-icon">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-value"><%= stats.totalDeposits %></h3>
+                        <p class="stat-label">Total Deposits</p>
+                        <div class="stat-amount">₹<%= (stats.depositAmount / 100000).toFixed(1) %>L</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card danger">
+                    <div class="stat-icon">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-value"><%= stats.totalWithdrawals %></h3>
+                        <p class="stat-label">Total Withdrawals</p>
+                        <div class="stat-amount">₹<%= (stats.withdrawalAmount / 100000).toFixed(1) %>L</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card info">
+                    <div class="stat-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-value"><%= stats.totalTransfers %></h3>
+                        <p class="stat-label">Total Transfers</p>
+                        <div class="stat-amount">₹<%= (stats.transferAmount / 100000).toFixed(1) %>L</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card warning">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-value"><%= stats.todayTransactions %></h3>
+                        <p class="stat-label">Today's Transactions</p>
+                        <div class="stat-amount">₹<%= (stats.todayAmount / 100000).toFixed(1) %>L</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Volume Chart -->
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line me-2"></i>Transaction Volume (Last 30 Days)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="transactionVolumeChart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-pie me-2"></i>Transaction Types</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="transactionTypesChart" height="200"></canvas>
+                        <div class="chart-legend mt-3">
+                            <div class="legend-item">
+                                <span class="legend-color bg-success"></span>
+                                <span>Deposits (<%= stats.totalDeposits %>)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color bg-danger"></span>
+                                <span>Withdrawals (<%= stats.totalWithdrawals %>)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color bg-primary"></span>
+                                <span>Transfers (<%= stats.totalTransfers %>)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6><i class="fas fa-filter me-2"></i>Filter Transactions</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="GET" id="filterForm" class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label for="search" class="form-label">Search</label>
+                                <input type="text" class="form-control" id="search" name="search" 
+                                       placeholder="Transaction ID, Account Number" 
+                                       value="<%= search || '' %>">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="type" class="form-label">Type</label>
+                                <select class="form-select" id="type" name="type">
+                                    <option value="all" <%= filter.type === 'all' ? 'selected' : '' %>>All Types</option>
+                                    <option value="deposit" <%= filter.type === 'deposit' ? 'selected' : '' %>>Deposits</option>
+                                    <option value="withdrawal" <%= filter.type === 'withdrawal' ? 'selected' : '' %>>Withdrawals</option>
+                                    <option value="transfer" <%= filter.type === 'transfer' ? 'selected' : '' %>>Transfers</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="all" <%= filter.status === 'all' ? 'selected' : '' %>>All Status</option>
+                                    <option value="completed" <%= filter.status === 'completed' ? 'selected' : '' %>>Completed</option>
+                                    <option value="pending" <%= filter.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                                    <option value="failed" <%= filter.status === 'failed' ? 'selected' : '' %>>Failed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="dateFrom" class="form-label">From Date</label>
+                                <input type="date" class="form-control" id="dateFrom" name="dateFrom" 
+                                       value="<%= filter.dateFrom || '' %>">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="dateTo" class="form-label">To Date</label>
+                                <input type="date" class="form-control" id="dateTo" name="dateTo" 
+                                       value="<%= filter.dateTo || '' %>">
+                            </div>
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <% if (transactions.length > 0) { %>
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="bulk-actions card border-warning">
+                    <div class="card-body py-2">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="selectAll">
+                                    <label class="form-check-label" for="selectAll">
+                                        Select All Transactions
+                                    </label>
+                                    <span class="selected-count ms-2 text-muted">(0 selected)</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <div class="bulk-action-buttons" style="display: none;">
+                                    <button class="btn btn-sm btn-success me-2" onclick="bulkApprove()">
+                                        <i class="fas fa-check me-1"></i>Approve Selected
+                                    </button>
+                                    <button class="btn btn-sm btn-danger me-2" onclick="bulkReject()">
+                                        <i class="fas fa-times me-1"></i>Reject Selected
+                                    </button>
+                                    <button class="btn btn-sm btn-info" onclick="exportSelected()">
+                                        <i class="fas fa-download me-1"></i>Export Selected
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Transactions Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-list me-2"></i>Transaction History</h5>
+                        <div class="card-actions">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-primary" onclick="setView('table')">
+                                    <i class="fas fa-table"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" onclick="setView('cards')">
+                                    <i class="fas fa-th-large"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <% if (transactions.length > 0) { %>
+                            <!-- Table View -->
+                            <div id="tableView" class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="40">
+                                                <input type="checkbox" class="form-check-input" id="tableSelectAll">
+                                            </th>
+                                            <th>Transaction ID</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>From Account</th>
+                                            <th>To Account</th>
+                                            <th>Description</th>
+                                            <th>Date & Time</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% transactions.forEach(transaction => { %>
+                                            <tr class="transaction-row" data-transaction-id="<%= transaction._id %>">
+                                                <td>
+                                                    <input type="checkbox" class="form-check-input transaction-checkbox" 
+                                                           value="<%= transaction._id %>">
+                                                </td>
+                                                <td>
+                                                    <div class="transaction-id-cell">
+                                                        <code class="transaction-code"><%= transaction.transactionId %></code>
+                                                        <button class="btn btn-sm btn-link p-0 ms-1" 
+                                                                onclick="copyToClipboard('<%= transaction.transactionId %>')"
+                                                                title="Copy Transaction ID">
+                                                            <i class="fas fa-copy"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <% if (transaction.type === 'deposit') { %>
+                                                        <span class="badge bg-success-subtle text-success">
+                                                            <i class="fas fa-arrow-down me-1"></i>Deposit
+                                                        </span>
+                                                    <% } else if (transaction.type === 'withdrawal') { %>
+                                                        <span class="badge bg-danger-subtle text-danger">
+                                                            <i class="fas fa-arrow-up me-1"></i>Withdrawal
+                                                        </span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-primary-subtle text-primary">
+                                                            <i class="fas fa-exchange-alt me-1"></i>Transfer
+                                                        </span>
+                                                    <% } %>
+                                                </td>
+                                                <td>
+                                                    <span class="amount-display <%= transaction.type === 'deposit' ? 'positive' : 'negative' %>">
+                                                        <%  const sign = transaction.type === 'deposit' ? '+' : '-'; %>
+                                                        <%= sign %>₹<%= transaction.amount.toLocaleString() %>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="account-info">
+                                                        <span class="account-number">
+                                                            <%= transaction.accountId.accountNumber %>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <% if (transaction.toAccountId) { %>
+                                                        <div class="account-info">
+                                                            <span class="account-number">
+                                                                <%= transaction.toAccountId.accountNumber %>
+                                                            </span>
+                                                        </div>
+                                                    <% } else { %>
+                                                        <span class="text-muted">-</span>
+                                                    <% } %>
+                                                </td>
+                                                <td>
+                                                    <div class="description-cell">
+                                                        <%= transaction.description || 'No description' %>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="date-time-cell">
+                                                        <div class="transaction-date">
+                                                            <%= new Date(transaction.createdAt).toLocaleDateString() %>
+                                                        </div>
+                                                        <div class="transaction-time text-muted small">
+                                                            <%= new Date(transaction.createdAt).toLocaleTimeString() %>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <% if (transaction.status === 'completed') { %>
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-check me-1"></i>Completed
+                                                        </span>
+                                                    <% } else if (transaction.status === 'pending') { %>
+                                                        <span class="badge bg-warning">
+                                                            <i class="fas fa-clock me-1"></i>Pending
+                                                        </span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-danger">
+                                                            <i class="fas fa-times me-1"></i>Failed
+                                                        </span>
+                                                    <% } %>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm" role="group">
+                                                        <button class="btn btn-outline-primary" 
+                                                                onclick="viewTransactionDetails('<%= transaction._id %>')"
+                                                                title="View Details">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <% if (transaction.status === 'pending') { %>
+                                                            <button class="btn btn-outline-success" 
+                                                                    onclick="approveTransaction('<%= transaction._id %>')"
+                                                                    title="Approve">
+                                                                <i class="fas fa-check"></i>
+                                                            </button>
+                                                            <button class="btn btn-outline-danger" 
+                                                                    onclick="rejectTransaction('<%= transaction._id %>')"
+                                                                    title="Reject">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        <% } %>
+                                                        <button class="btn btn-outline-info" 
+                                                                onclick="exportTransaction('<%= transaction._id %>')"
+                                                                title="Export">
+                                                            <i class="fas fa-download"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Card View (Hidden by default) -->
+                            <div id="cardView" class="transaction-cards" style="display: none;">
+                                <div class="row g-3 p-3">
+                                    <% transactions.forEach(transaction => { %>
+                                        <div class="col-lg-4 col-md-6">
+                                            <div class="transaction-card">
+                                                <div class="transaction-card-header">
+                                                    <div class="transaction-type">
+                                                        <% if (transaction.type === 'deposit') { %>
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-arrow-down me-1"></i>Deposit
+                                                            </span>
+                                                        <% } else if (transaction.type === 'withdrawal') { %>
+                                                            <span class="badge bg-danger">
+                                                                <i class="fas fa-arrow-up me-1"></i>Withdrawal
+                                                            </span>
+                                                        <% } else { %>
+                                                            <span class="badge bg-primary">
+                                                                <i class="fas fa-exchange-alt me-1"></i>Transfer
+                                                            </span>
+                                                        <% } %>
+                                                    </div>
+                                                    <div class="transaction-amount">
+                                                        ₹<%= transaction.amount.toLocaleString() %>
+                                                    </div>
+                                                </div>
+                                                <div class="transaction-card-body">
+                                                    <div class="transaction-detail">
+                                                        <strong>ID:</strong> 
+                                                        <code><%= transaction.transactionId %></code>
+                                                    </div>
+                                                    <div class="transaction-detail">
+                                                        <strong>From:</strong> 
+                                                        <%= transaction.accountId.accountNumber %>
+                                                    </div>
+                                                    <% if (transaction.toAccountId) { %>
+                                                        <div class="transaction-detail">
+                                                            <strong>To:</strong> 
+                                                            <%= transaction.toAccountId.accountNumber %>
+                                                        </div>
+                                                    <% } %>
+                                                    <div class="transaction-detail">
+                                                        <strong>Date:</strong> 
+                                                        <%= new Date(transaction.createdAt).toLocaleDateString() %>
+                                                        <%= new Date(transaction.createdAt).toLocaleTimeString() %>
+                                                    </div>
+                                                    <% if (transaction.description) { %>
+                                                        <div class="transaction-detail">
+                                                            <strong>Description:</strong> 
+                                                            <%= transaction.description %>
+                                                        </div>
+                                                    <% } %>
+                                                </div>
+                                                <div class="transaction-card-footer">
+                                                    <div class="transaction-status">
+                                                        <% if (transaction.status === 'completed') { %>
+                                                            <span class="badge bg-success">Completed</span>
+                                                        <% } else if (transaction.status === 'pending') { %>
+                                                            <span class="badge bg-warning">Pending</span>
+                                                        <% } else { %>
+                                                            <span class="badge bg-danger">Failed</span>
+                                                        <% } %>
+                                                    </div>
+                                                    <div class="transaction-actions">
+                                                        <button class="btn btn-sm btn-outline-primary" 
+                                                                onclick="viewTransactionDetails('<%= transaction._id %>')">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% }) %>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <div class="empty-state">
+                                <i class="fas fa-receipt"></i>
+                                <h5>No Transactions Found</h5>
+                                <p class="text-muted">No transactions match your current filters</p>
+                                <a href="/admin/transactions" class="btn btn-outline-primary">
+                                    <i class="fas fa-refresh me-2"></i>Clear Filters
+                                </a>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <% if (totalPages > 1) { %>
+        <div class="row mt-4">
+            <div class="col-12">
+                <nav aria-label="Transaction pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                            <a class="page-link" href="?page=<%= currentPage - 1 %>&<%= new URLSearchParams(req.query).toString().replace('page=' + currentPage, '') %>">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                        </li>
+                        
+                        <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
+                            <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                <a class="page-link" href="?page=<%= i %>&<%= new URLSearchParams(req.query).toString().replace('page=' + currentPage, '') %>">
+                                    <%= i %>
+                                </a>
+                            </li>
+                        <% } %>
+                        
+                        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                            <a class="page-link" href="?page=<%= currentPage + 1 %>&<%= new URLSearchParams(req.query).toString().replace('page=' + currentPage, '') %>">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <div class="text-center text-muted">
+                    Showing <%= (currentPage - 1) * 20 + 1 %> to <%= Math.min(currentPage * 20, totalTransactions) %> 
+                    of <%= totalTransactions %> transactions
+                </div>
+            </div>
+        </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Transaction Details Modal -->
+<div class="modal fade" id="transactionDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-receipt text-primary me-2"></i>Transaction Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="transactionDetailsContent">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="printTransactionDetails()">
+                    <i class="fas fa-print me-2"></i>Print
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Initialize charts
+document.addEventListener('DOMContentLoaded', function() {
+    // Transaction Volume Chart
+    const ctx1 = document.getElementById('transactionVolumeChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: generateLast30Days(),
+            datasets: [{
+                label: 'Transaction Volume',
+                data: generateRandomData(30, 5, 50),
+                borderColor: 'rgb(37, 99, 235)',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Transaction Types Chart
+    const ctx2 = document.getElementById('transactionTypesChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: ['Deposits', 'Withdrawals', 'Transfers'],
+            datasets: [{
+                data: [<%= stats.totalDeposits %>, <%= stats.totalWithdrawals %>, <%= stats.totalTransfers %>],
+                backgroundColor: ['#059669', '#dc2626', '#2563eb'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+});
+
+// Helper functions for chart data
+function generateLast30Days() {
+    const days = [];
+    for (let i = 29; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    }
+    return days;
+}
+
+function generateRandomData(count, min, max) {
+    return Array.from({ length: count }, () => Math.floor(Math.random() * (max - min + 1)) + min);
+}
+
+// View toggle functions
+function setView(viewType) {
+    const tableView = document.getElementById('tableView');
+    const cardView = document.getElementById('cardView');
+    
+    if (viewType === 'table') {
+        tableView.style.display = 'block';
+        cardView.style.display = 'none';
+    } else {
+        tableView.style.display = 'none';
+        cardView.style.display = 'block';
+    }
+}
+
+// Selection functions
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const tableSelectAllCheckbox = document.getElementById('tableSelectAll');
+    const transactionCheckboxes = document.querySelectorAll('.transaction-checkbox');
+    const bulkActionButtons = document.querySelector('.bulk-action-buttons');
+    const selectedCount = document.querySelector('.selected-count');
+
+    function updateBulkActions() {
+        const checkedBoxes = document.querySelectorAll('.transaction-checkbox:checked');
+        const count = checkedBoxes.length;
+        
+        selectedCount.textContent = `(${count} selected)`;
+        bulkActionButtons.style.display = count > 0 ? 'block' : 'none';
+        
+        selectAllCheckbox.indeterminate = count > 0 && count < transactionCheckboxes.length;
+        selectAllCheckbox.checked = count === transactionCheckboxes.length;
+        
+        if (tableSelectAllCheckbox) {
+            tableSelectAllCheckbox.indeterminate = count > 0 && count < transactionCheckboxes.length;
+            tableSelectAllCheckbox.checked = count === transactionCheckboxes.length;
+        }
+    }
+
+    // Select all functionality
+    [selectAllCheckbox, tableSelectAllCheckbox].forEach(checkbox => {
+        if (checkbox) {
+            checkbox.addEventListener('change', function() {
+                transactionCheckboxes.forEach(cb => cb.checked = this.checked);
+                updateBulkActions();
+            });
+        }
+    });
+
+    // Individual checkbox functionality
+    transactionCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
+
+    updateBulkActions();
+});
+
+// Action functions
+function refreshTransactions() {
+    location.reload();
+}
+
+function exportTransactions() {
+    const params = new URLSearchParams(window.location.search);
+    params.set('export', 'true');
+    window.open(`/admin/transactions/export?${params.toString()}`, '_blank');
+}
+
+function exportSelected() {
+    const selectedIds = Array.from(document.querySelectorAll('.transaction-checkbox:checked'))
+        .map(cb => cb.value);
+    
+    if (selectedIds.length === 0) {
+        alert('Please select transactions to export');
+        return;
+    }
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/admin/transactions/export-selected';
+    form.target = '_blank';
+    
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'transactionIds';
+    input.value = JSON.stringify(selectedIds);
+    
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+function bulkApprove() {
+    const selectedIds = Array.from(document.querySelectorAll('.transaction-checkbox:checked'))
+        .map(cb => cb.value);
+    
+    if (selectedIds.length === 0) {
+        alert('Please select transactions to approve');
+        return;
+    }}

@@ -1,0 +1,89 @@
+<%- include('../partials/header', { title: 'Login - SecureBank' }) %>
+
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <div class="auth-logo">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <h2 class="auth-title">Welcome Back</h2>
+                        <p class="auth-subtitle">Sign in to your SecureBank account</p>
+                    </div>
+                    
+                    <div class="auth-body">
+                        <% if (error) { %>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <%= error %>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        <% } %>
+                        
+                        <% if (message) { %>
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <%= message %>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        <% } %>
+                        
+                        <form action="/auth/login" method="POST" class="auth-form">
+                            <div class="form-floating mb-3">
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="name@example.com" required>
+                                <label for="email">
+                                    <i class="fas fa-envelope me-2"></i>Email Address
+                                </label>
+                            </div>
+                            
+                            <div class="form-floating mb-4">
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       placeholder="Password" required>
+                                <label for="password">
+                                    <i class="fas fa-lock me-2"></i>Password
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-4">
+                                <input type="checkbox" class="form-check-input" id="remember">
+                                <label class="form-check-label" for="remember">Remember me</label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 mb-3 btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                            </button>
+                        </form>
+                        
+                        <div class="auth-divider">
+                            <span>Don't have an account?</span>
+                        </div>
+                        
+                        <div class="text-center">
+                            <a href="/auth/signup" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Demo Accounts Info -->
+                    <div class="demo-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Demo Accounts</h6>
+                        <div class="demo-accounts">
+                            <div class="demo-account">
+                                <strong>Admin:</strong> admin@securebank.com / admin123
+                            </div>
+                            <div class="demo-account">
+                                <strong>Customer:</strong> john@email.com / john123
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

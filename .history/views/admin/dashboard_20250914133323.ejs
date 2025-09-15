@@ -1,0 +1,641 @@
+<%- include('../partials/header', { title: 'Dashboard - SecureBank' }) %>
+
+<div class="customer-dashboard">
+    <div class="container-fluid">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="dashboard-title">
+                        <i class="fas fa-tachometer-alt me-3"></i>Welcome back, <%= user.name %>!
+                    </h1>
+                    <p class="dashboard-subtitle">
+                        <i class="fas fa-calendar me-2"></i>
+                        Today is <%= new Date().toLocaleDateString('en-US', { 
+                            weekday: 'long', 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                        }) %>
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="account-status-badge">
+                        <% if (account.status === 'active') { %>
+                            <span class="badge bg-success-subtle text-success fs-6">
+                                <i class="fas fa-check-circle me-1"></i>Account Active
+                            </span>
+                        <% } else if (account.status === 'pending') { %>
+                            <span class="badge bg-warning-subtle text-warning fs-6">
+                                <i class="fas fa-clock me-1"></i>Pending Approval
+                            </span>
+                        <% } else { %>
+                            <span class="badge bg-danger-subtle text-danger fs-6">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Account <%= account.status %>
+                            </span>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Account Overview Card -->
+            <div class="col-lg-8">
+                <div class="card account-overview-card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-wallet me-2"></i>Account Overview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="account-info-section">
+                                    <h6 class="section-title">Account Information</h6>
+                                    <div class="info-item">
+                                        <span class="info-label">Account Number:</span>
+                                        <span class="info-value">
+                                            <code><%= account.accountNumber %></code>
+                                            <button class="btn btn-sm btn-link p-0 ms-2" 
+                                                    onclick="copyToClipboard('<%= account.accountNumber %>')"
+                                                    title="Copy Account Number">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Account Type:</span>
+                                        <span class="info-value text-capitalize">
+                                            <i class="fas fa-piggy-bank me-1"></i>
+                                            <%= account.accountType || 'Savings' %>
+                                        </span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Account Since:</span>
+                                        <span class="info-value">
+                                            <%= new Date(account.createdAt).toLocaleDateString() %>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="balance-section">
+                                    <h6 class="section-title">Current Balance</h6>
+                                    <div class="balance-display">
+                                        <div class="balance-amount">
+                                            ₹<%= account.balance.toLocaleString() %>
+                                        </div>
+                                        <div class="balance-label">Available Balance</div>
+                                    </div>
+                                    <div class="balance-actions mt-3">
+                                        <button class="btn btn-success btn-sm me-2" data-bs-toggle="modal" data-bs-target="#depositModal">
+                                            <i class="fas fa-plus me-1"></i>Deposit
+                                        </button>
+                                        <button class="btn btn-danger btn-sm me-2" data-bs-toggle="modal" data-bs-target="#withdrawModal">
+                                            <i class="fas fa-minus me-1"></i>Withdraw
+                                        </button>
+                                        <a href="/customer/transfer" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-paper-plane me-1"></i>Transfer
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="col-lg-4">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="stat-card success">
+                            <div class="stat-icon">
+                                <i class="fas fa-arrow-down"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4 class="stat-value">₹<%= stats.totalDeposits.toLocaleString() %></h4>
+                                <p class="stat-label">Total Deposits</p>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>This month</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="stat-card danger">
+                            <div class="stat-icon">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4 class="stat-value">₹<%= stats.totalWithdrawals.toLocaleString() %></h4>
+                                <p class="stat-label">Total Withdrawals</p>
+                                <div class="stat-change negative">
+                                    <i class="fas fa-arrow-down"></i>
+                                    <span>This month</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="stat-card info">
+                            <div class="stat-icon">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4 class="stat-value"><%= stats.transactionCount %></h4>
+                                <p class="stat-label">Total Transactions</p>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>All time</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-clock me-2"></i>Recent Transactions</h5>
+                        <a href="/customer/transactions" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-history me-1"></i>View All
+                        </a>
+                    </div>
+                    <div class="card-body p-0">
+                        <% if (recentTransactions && recentTransactions.length > 0) { %>
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Transaction ID</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Amount</th>
+                                            <th>Balance</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% recentTransactions.forEach(transaction => { %>
+                                            <tr>
+                                                <td>
+                                                    <div class="transaction-date">
+                                                        <div><%= new Date(transaction.createdAt).toLocaleDateString() %></div>
+                                                        <small class="text-muted">
+                                                            <%= new Date(transaction.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                                                        </small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <code class="transaction-id"><%= transaction.transactionId %></code>
+                                                </td>
+                                                <td>
+                                                    <% if (transaction.type === 'deposit') { %>
+                                                        <span class="badge bg-success-subtle text-success">
+                                                            <i class="fas fa-arrow-down me-1"></i>Deposit
+                                                        </span>
+                                                    <% } else if (transaction.type === 'withdrawal') { %>
+                                                        <span class="badge bg-danger-subtle text-danger">
+                                                            <i class="fas fa-arrow-up me-1"></i>Withdrawal
+                                                        </span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-primary-subtle text-primary">
+                                                            <i class="fas fa-exchange-alt me-1"></i>Transfer
+                                                        </span>
+                                                    <% } %>
+                                                </td>
+                                                <td>
+                                                    <div class="transaction-description">
+                                                        <%= transaction.description || 'No description' %>
+                                                        <% if (transaction.type === 'transfer' && transaction.toAccountId) { %>
+                                                            <% if (transaction.accountId.toString() === account._id.toString()) { %>
+                                                                <small class="text-muted d-block">
+                                                                    To: <%= transaction.toAccountId.accountNumber %>
+                                                                </small>
+                                                            <% } else { %>
+                                                                <small class="text-muted d-block">
+                                                                    From: <%= transaction.accountId.accountNumber %>
+                                                                </small>
+                                                            <% } %>
+                                                        <% } %>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <% 
+                                                    let isCredit = false;
+                                                    let displayAmount = transaction.amount;
+                                                    
+                                                    if (transaction.type === 'deposit') {
+                                                        isCredit = true;
+                                                    } else if (transaction.type === 'withdrawal') {
+                                                        isCredit = false;
+                                                    } else if (transaction.type === 'transfer') {
+                                                        if (transaction.toAccountId && transaction.toAccountId.toString() === account._id.toString()) {
+                                                            isCredit = true; // Money received
+                                                        } else {
+                                                            isCredit = false; // Money sent
+                                                        }
+                                                    }
+                                                    %>
+                                                    <span class="amount-display <%= isCredit ? 'positive' : 'negative' %>">
+                                                        <%= isCredit ? '+' : '-' %>₹<%= displayAmount.toLocaleString() %>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="balance-after">
+                                                        ₹<%= (transaction.balanceAfter || account.balance).toLocaleString() %>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <% if (transaction.status === 'completed') { %>
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-check me-1"></i>Completed
+                                                        </span>
+                                                    <% } else if (transaction.status === 'pending') { %>
+                                                        <span class="badge bg-warning">
+                                                            <i class="fas fa-clock me-1"></i>Pending
+                                                        </span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-danger">
+                                                            <i class="fas fa-times me-1"></i>Failed
+                                                        </span>
+                                                    <% } %>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <% } else { %>
+                            <div class="empty-state">
+                                <i class="fas fa-receipt"></i>
+                                <h6>No Recent Transactions</h6>
+                                <p class="text-muted">Your transaction history will appear here</p>
+                                <div class="empty-state-actions">
+                                    <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#depositModal">
+                                        <i class="fas fa-plus me-1"></i>Make a Deposit
+                                    </button>
+                                    <a href="/customer/transfer" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane me-1"></i>Send Money
+                                    </a>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3 col-6">
+                                <a href="/customer/transfer" class="quick-action-card">
+                                    <div class="action-icon bg-primary">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </div>
+                                    <div class="action-content">
+                                        <h6>Send Money</h6>
+                                        <p>Transfer to other accounts</p>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <button class="quick-action-card" data-bs-toggle="modal" data-bs-target="#depositModal">
+                                    <div class="action-icon bg-success">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                    <div class="action-content">
+                                        <h6>Deposit Money</h6>
+                                        <p>Add funds to account</p>
+                                    </div>
+                                </button>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <a href="/customer/transactions" class="quick-action-card">
+                                    <div class="action-icon bg-info">
+                                        <i class="fas fa-history"></i>
+                                    </div>
+                                    <div class="action-content">
+                                        <h6>Transaction History</h6>
+                                        <p>View all transactions</p>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <button class="quick-action-card" onclick="downloadStatement()">
+                                    <div class="action-icon bg-warning">
+                                        <i class="fas fa-file-download"></i>
+                                    </div>
+                                    <div class="action-content">
+                                        <h6>Download Statement</h6>
+                                        <p>Get account statement</p>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Deposit Modal -->
+<div class="modal fade" id="depositModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle text-success me-2"></i>Deposit Money
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="depositForm">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        You can deposit up to ₹1,00,000 per transaction
+                    </div>
+                    <div class="mb-3">
+                        <label for="depositAmount" class="form-label">Amount to Deposit</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" id="depositAmount" 
+                                   min="1" max="100000" step="1" required>
+                        </div>
+                        <div class="form-text">Minimum: ₹1 | Maximum: ₹1,00,000</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="depositDescription" class="form-label">Description (Optional)</label>
+                        <input type="text" class="form-control" id="depositDescription" 
+                               maxlength="100" placeholder="e.g., Salary credit, Business income">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Deposit Money
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Withdraw Modal -->
+<div class="modal fade" id="withdrawModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-minus-circle text-danger me-2"></i>Withdraw Money
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="withdrawForm">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Minimum balance of ₹1,000 must be maintained
+                    </div>
+                    <div class="mb-3">
+                        <label for="withdrawAmount" class="form-label">Amount to Withdraw</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" id="withdrawAmount" 
+                                   min="1" step="1" required>
+                        </div>
+                        <div class="form-text">
+                            Available: ₹<span id="availableAmount"><%= Math.max(0, account.balance - 1000).toLocaleString() %></span>
+                            | Maximum per transaction: ₹50,000
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="withdrawDescription" class="form-label">Description (Optional)</label>
+                        <input type="text" class="form-control" id="withdrawDescription" 
+                               maxlength="100" placeholder="e.g., ATM withdrawal, Cash payment">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-minus me-2"></i>Withdraw Money
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Copy to clipboard function
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        showToast('Account number copied to clipboard!', 'success');
+    }).catch(function(err) {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('Account number copied to clipboard!', 'success');
+    });
+}
+
+// Show toast notification
+function showToast(message, type = 'info') {
+    // Remove existing toasts
+    const existingToasts = document.querySelectorAll('.toast-notification');
+    existingToasts.forEach(toast => toast.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed toast-notification`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(toast);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+// Deposit form handler
+document.getElementById('depositForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitButton = this.querySelector('button[type="submit"]');
+    const originalText = submitButton.innerHTML;
+    
+    // Disable button and show loading
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    
+    const amount = document.getElementById('depositAmount').value;
+    const description = document.getElementById('depositDescription').value;
+    
+    try {
+        const response = await fetch('/customer/deposit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ amount: parseFloat(amount), description })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(result.message || 'Deposit successful!', 'success');
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('depositModal'));
+            modal.hide();
+            // Reload page after short delay
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showToast(result.error || 'Deposit failed!', 'danger');
+        }
+    } catch (error) {
+        console.error('Deposit error:', error);
+        showToast('An error occurred. Please try again.', 'danger');
+    } finally {
+        // Re-enable button
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalText;
+    }
+});
+
+// Withdraw form handler
+document.getElementById('withdrawForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitButton = this.querySelector('button[type="submit"]');
+    const originalText = submitButton.innerHTML;
+    
+    // Disable button and show loading
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    
+    const amount = document.getElementById('withdrawAmount').value;
+    const description = document.getElementById('withdrawDescription').value;
+    
+    try {
+        const response = await fetch('/customer/withdraw', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ amount: parseFloat(amount), description })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(result.message || 'Withdrawal successful!', 'success');
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('withdrawModal'));
+            modal.hide();
+            // Reload page after short delay
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showToast(result.error || 'Withdrawal failed!', 'danger');
+        }
+    } catch (error) {
+        console.error('Withdraw error:', error);
+        showToast('An error occurred. Please try again.', 'danger');
+    } finally {
+        // Re-enable button
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalText;
+    }
+});
+
+// Download statement function
+function downloadStatement() {
+    const options = [
+        { value: 'pdf', text: 'PDF Statement' },
+        { value: 'csv', text: 'CSV Data' },
+        { value: 'excel', text: 'Excel File' }
+    ];
+    
+    let optionsText = 'Choose statement format:\n';
+    options.forEach((option, index) => {
+        optionsText += `${index + 1}. ${option.text}\n`;
+    });
+    
+    const choice = prompt(optionsText + '\nEnter 1, 2, or 3:');
+    
+    if (choice && choice >= 1 && choice <= 3) {
+        const format = options[choice - 1].value;
+        showToast('Generating statement...', 'info');
+        
+        // Create download link
+        const downloadUrl = `/customer/statement?format=${format}`;
+        window.open(downloadUrl, '_blank');
+    }
+}
+
+// Reset form when modals are hidden
+document.getElementById('depositModal').addEventListener('hidden.bs.modal', function() {
+    document.getElementById('depositForm').reset();
+});
+
+document.getElementById('withdrawModal').addEventListener('hidden.bs.modal', function() {
+    document.getElementById('withdrawForm').reset();
+});
+
+// Calculate available withdrawal amount on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const accountBalance = <%= account.balance %>;
+    const minBalance = 1000;
+    const maxPerTransaction = 50000;
+    const availableAmount = Math.max(0, Math.min(accountBalance - minBalance, maxPerTransaction));
+    
+    // Update withdraw input max attribute
+    const withdrawInput = document.getElementById('withdrawAmount');
+    if (withdrawInput) {
+        withdrawInput.setAttribute('max', availableAmount);
+        
+        // Update withdraw amount dynamically
+        withdrawInput.addEventListener('input', function() {
+            if (parseFloat(this.value) > availableAmount) {
+                this.value = availableAmount;
+            }
+        });
+    }
+    
+    // Initialize tooltips if Bootstrap is available
+    if (typeof bootstrap !== 'undefined') {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+});
+</script>
+
+<%- include('../partials/footer') %>

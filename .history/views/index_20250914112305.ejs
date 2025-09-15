@@ -1,0 +1,234 @@
+<%- include('partials/header', { title: 'SecureBank - Your Trusted Banking Partner' }) %>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="container">
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-6">
+                <div class="hero-content animate-fade-in">
+                    <h1 class="hero-title">
+                        Welcome to <span class="text-gradient">SecureBank</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Experience the future of banking with our secure, fast, and reliable online banking platform. 
+                        Manage your finances with confidence and ease.
+                    </p>
+                    
+                    <% if (typeof user === 'undefined' || !user) { %>
+                        <div class="hero-actions">
+                            <a href="/auth/login" class="btn btn-primary btn-lg me-3">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </a>
+                            <a href="/auth/signup" class="btn btn-outline-light btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Get Started
+                            </a>
+                        </div>
+                    <% } else { %>
+                        <div class="welcome-back-card">
+                            <div class="alert alert-success shadow-sm border-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="alert-icon me-3">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="alert-heading mb-1">Welcome back, <%= user.name %>!</h5>
+                                        <p class="mb-2">Ready to manage your finances?</p>
+                                        <% if (user.role === 'admin') { %>
+                                            <a href="/admin/dashboard" class="btn btn-success">
+                                                <i class="fas fa-tachometer-alt me-2"></i>Go to Admin Dashboard
+                                            </a>
+                                        <% } else { %>
+                                            <a href="/customer/dashboard" class="btn btn-success">
+                                                <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                                            </a>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="hero-card animate-slide-up">
+                    <div class="card feature-card shadow-lg border-0">
+                        <div class="card-body p-5">
+                            <div class="feature-icon mb-4">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h3 class="card-title mb-4">Why Choose SecureBank?</h3>
+                            
+                            <div class="row g-4">
+                                <div class="col-6">
+                                    <div class="feature-item">
+                                        <div class="feature-item-icon">
+                                            <i class="fas fa-lock"></i>
+                                        </div>
+                                        <div>
+                                            <h6>Bank-Grade Security</h6>
+                                            <small class="text-muted">256-bit SSL encryption</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-6">
+                                    <div class="feature-item">
+                                        <div class="feature-item-icon text-success">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <div>
+                                            <h6>24/7 Service</h6>
+                                            <small class="text-muted">Always available</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-6">
+                                    <div class="feature-item">
+                                        <div class="feature-item-icon text-warning">
+                                            <i class="fas fa-mobile-alt"></i>
+                                        </div>
+                                        <div>
+                                            <h6>Mobile Ready</h6>
+                                            <small class="text-muted">Access anywhere</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-6">
+                                    <div class="feature-item">
+                                        <div class="feature-item-icon text-info">
+                                            <i class="fas fa-headset"></i>
+                                        </div>
+                                        <div>
+                                            <h6>Expert Support</h6>
+                                            <small class="text-muted">Professional help</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title">Banking Features</h2>
+                <p class="section-subtitle">Everything you need to manage your finances efficiently</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="service-card h-100">
+                    <div class="service-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Instant Transfers</h5>
+                        <p class="card-text">Transfer money between accounts instantly and securely with our advanced transfer system. No waiting, no delays.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check text-success me-2"></i>Real-time processing</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Secure encryption</li>
+                            <li><i class="fas fa-check text-success me-2"></i>24/7 availability</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="service-card h-100">
+                    <div class="service-icon bg-success">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Transaction History</h5>
+                        <p class="card-text">Track all your transactions with detailed history and powerful filtering options for better financial management.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check text-success me-2"></i>Detailed records</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Advanced filtering</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Export capabilities</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="service-card h-100">
+                    <div class="service-icon bg-warning">
+                        <i class="fas fa-file-download"></i>
+                    </div>
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Download Statements</h5>
+                        <p class="card-text">Generate and download your account statements in multiple formats anytime you need them.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check text-success me-2"></i>PDF format</li>
+                            <li><i class="fas fa-check text-success me-2"></i>CSV for Excel</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Custom date ranges</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section py-5">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Happy Customers</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item">
+                    <div class="stat-number">₹500Cr+</div>
+                    <div class="stat-label">Transactions Processed</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Customer Support</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Uptime Guarantee</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="cta-title">Ready to Get Started?</h2>
+                <p class="cta-subtitle">Join thousands of satisfied customers who trust SecureBank for their banking needs.</p>
+                <% if (typeof user === 'undefined' || !user) { %>
+                    <a href="/auth/signup" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Open Account Now
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</section>
+
+<%- include('partials/footer') %>

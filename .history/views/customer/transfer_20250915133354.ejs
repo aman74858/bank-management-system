@@ -1,0 +1,221 @@
+
+<!-- ===================================================================================== -->
+<!-- transfer.ejs -->
+<%- include('../partials/header', { title: 'Transfer Money - SecureBank' }) %>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-exchange-alt"></i> Transfer Money</h3>
+                </div>
+                <div class="card-body">
+                    <% if (typeof error !== 'undefined' && error) { %>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i> <%= error %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    <% } %>
+                    
+                    <% if (typeof success !== 'undefined' && success) { %>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle"></i> <%= success %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    <% } %>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">From Account</h6>
+                                    <% if (typeof user !== 'undefined' && user && typeof user.account !== 'undefined' && user.account && user.account.accountNumber) { %>
+                                        <h4 class="text-primary"><%= user.account.accountNumber %></h4>
+                                        <p class="mb-0">Balance: <strong>$<%= user.account.balance ? user.account.balance.toFixed(2) : '0.00' %></strong></p>
+                                    <% } else { %>
+                                        <h4 class="text-danger">No Account Found</h4>
+                                        <p class="mb-0">Please contact support to create an account.</p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">To Account</h6>
+                                    <h4 class="text-success" id="recipientAccountDisplay">Enter account number</h4>
+                                    <p class="mb-0" id="recipientNameDisplay">Recipient name will appear here</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <% if (typeof user !== 'undefined' && user && typeof user.account !== 'undefined' && user.account && user.account.accountNumber) { %>
+                    <form action="/customer/transfer" method="POST" id="transferForm">
+                        <div class="mb-3">
+                            <label for="accountNumber" class="form-label">Recipient Account Number</label>
+                            <input type="text" class="form-control" id="accountNumber" name="accountNumber" 
+                                   placeholder="Enter recipient's account number" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount to Transfer</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="amount" name="amount" 
+                                       placeholder="Enter amount" step="0.01" min="1" 
+                                       max="<%= user.account.balance ? user.account.balance : 0 %>" required>
+                            </div>
+                            <div class="form-text">Maximum transfer per day: $2,500.00</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="2" placeholder="Add a note about this transfer"></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-exchange-alt"></i> Transfer Money
+                            </button>
+                        </div>
+                    </form>
+                    <% } else { %>
+                    <div class="alert alert-danger text-center">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        You need an active account to make transfers. Please contact support.
+                    </div>
+                    <% } %>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>
+                        <i class="fas fa-info-circle"></i> Transfers are processed immediately. Please verify account details before confirming.
+                    </small>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Recent Transfers</h5>
+                </div>
+                <div class="card-body">
+                    <% if (typeof transactions !== 'undefined' && transactions && transactions.length > 0) { %>
+                        <div class="list-group list-group-flush">
+                            <% transactions.filter(t => t.type === 'transfer').slice(0, 3).forEach(transaction => { %>
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Transfer</h6>
+                                        <small class="text-danger">-$<%= transaction.amount ? transaction.amount.toFixed(2) : '0.00' %></small>
+                                    </div>
+                                    <p class="mb-1 small"><%= transaction.description || 'No description' %></p>
+                                    <small class="text-muted"><%= transaction.timestamp ? new Date(transaction.timestamp).toLocaleDateString() : 'N/A' %></small>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-3">
+                            <i class="fas fa-receipt display-4 text-muted"></i>
+                            <p class="mt-2 text-muted">No recent transfers</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const transferForm = document.getElementById('transferForm');
+    const accountNumberInput = document.getElementById('accountNumber');
+    const amountInput = document.getElementById('amount');
+    const recipientDisplay = document.getElementById('recipientAccountDisplay');
+    const recipientNameDisplay = document.getElementById('recipientNameDisplay');
+    
+    // Account verification on blur
+    if (accountNumberInput) {
+        accountNumberInput.addEventListener('blur', async function() {
+            const accountNumber = this.value.trim();
+            if (accountNumber && accountNumber.length >= 8) {
+                await verifyAccount(accountNumber);
+            }
+        });
+    }
+    
+    // Form validation
+    if (transferForm) {
+        transferForm.addEventListener('submit', function(e) {
+            const amount = parseFloat(amountInput.value);
+            const accountNumber = accountNumberInput.value.trim();
+            
+            if (!accountNumber || accountNumber.length < 8) {
+                e.preventDefault();
+                showAlert('Please enter a valid account number', 'danger');
+                return;
+            }
+            
+            if (!amount || amount <= 0) {
+                e.preventDefault();
+                showAlert('Please enter a valid amount', 'danger');
+                return;
+            }
+            
+            <% if (typeof user !== 'undefined' && user && user.account && user.account.balance) { %>
+            if (amount > <%= user.account.balance %>) {
+                e.preventDefault();
+                showAlert('Insufficient funds', 'danger');
+                return;
+            }
+            <% } %>
+        });
+    }
+    
+    async function verifyAccount(accountNumber) {
+        try {
+            const response = await fetch('/customer/verify-account', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ accountNumber })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success && result.account) {
+                recipientDisplay.textContent = result.account.accountNumber;
+                recipientNameDisplay.textContent = result.account.userId ? result.account.userId.name : 'Account found';
+                recipientDisplay.className = 'text-success';
+            } else {
+                recipientDisplay.textContent = 'Account not found';
+                recipientNameDisplay.textContent = 'Please check the account number';
+                recipientDisplay.className = 'text-danger';
+            }
+        } catch (error) {
+            console.error('Account verification failed:', error);
+            recipientDisplay.textContent = 'Verification failed';
+            recipientNameDisplay.textContent = 'Please try again';
+            recipientDisplay.className = 'text-warning';
+        }
+    }
+    
+    function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const container = document.querySelector('.container');
+        if (container) {
+            container.insertBefore(alertDiv, container.firstChild);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+    }
+});
+</script>
+
+<%- include('../partials/footer') %>

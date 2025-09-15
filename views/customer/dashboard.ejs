@@ -1,0 +1,191 @@
+-- dashboard.ejs -->
+<%- include('../partials/header', { title: 'Dashboard - SecureBank' }) %>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4"><i class="fas fa-tachometer-alt"></i> Customer Dashboard</h2>
+            
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle"></i> <%= error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+            
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle"></i> <%= success %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <% if (typeof user !== 'undefined' && user && typeof user.account !== 'undefined' && user.account) { %>
+    <div class="row">
+        <!-- Account Summary -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-wallet"></i> Account Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong>Account Number:</strong> <%= user.account.accountNumber || 'N/A' %>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Account Type:</strong> 
+                                <span class="badge bg-info">Savings Account</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Account Status:</strong> 
+                                <span class="badge bg-<%= (user.account.status === 'active') ? 'success' : (user.account.status === 'pending') ? 'warning' : 'danger' %>">
+                                    <%= user.account.status ? user.account.status.charAt(0).toUpperCase() + user.account.status.slice(1) : 'Unknown' %>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong>Account Holder:</strong> <%= user.name || 'N/A' %>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Email:</strong> <%= user.email || 'N/A' %>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Member Since:</strong> <%= user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A' %>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="balance-display text-center py-4">
+                        <h6 class="text-muted">Available Balance</h6>
+                        <h1 class="display-4 fw-bold">$<%= user.account.balance ? user.account.balance.toFixed(2) : '0.00' %></h1>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <% if (user.account.status === 'active') { %>
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3">
+                            <a href="/customer/deposit" class="btn btn-success btn-lg w-100 py-3">
+                                <i class="fas fa-arrow-down display-6 d-block mb-2"></i>
+                                Deposit
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="/customer/withdraw" class="btn btn-danger btn-lg w-100 py-3">
+                                <i class="fas fa-arrow-up display-6 d-block mb-2"></i>
+                                Withdraw
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="/customer/transfer" class="btn btn-primary btn-lg w-100 py-3">
+                                <i class="fas fa-exchange-alt display-6 d-block mb-2"></i>
+                                Transfer
+                            </a>
+                        </div>
+                    </div>
+                    <% } else { %>
+                    <div class="alert alert-warning text-center">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Your account is <%= user.account.status || 'inactive' %>. Please contact support to activate your account.
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Transactions -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Recent Transactions</h5>
+                </div>
+                <div class="card-body p-0">
+                    <% if (typeof transactions !== 'undefined' && transactions && transactions.length > 0) { %>
+                        <div class="list-group list-group-flush">
+                            <% transactions.slice(0, 5).forEach(transaction => { %>
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">
+                                            <span class="badge bg-<%= 
+                                                transaction.type === 'deposit' ? 'success' : 
+                                                transaction.type === 'withdrawal' ? 'danger' : 'primary'
+                                            %>">
+                                                <%= transaction.type || 'unknown' %>
+                                            </span>
+                                        </h6>
+                                        <small class="text-<%= 
+                                            transaction.type === 'deposit' ? 'success' : 'danger'
+                                        %>">
+                                            <%= transaction.type === 'withdrawal' ? '-' : '+' %>$<%= transaction.amount ? transaction.amount.toFixed(2) : '0.00' %>
+                                        </small>
+                                    </div>
+                                    <p class="mb-1 small"><%= transaction.description || 'No description' %></p>
+                                    <small class="text-muted"><%= transaction.timestamp ? new Date(transaction.timestamp).toLocaleDateString() : 'N/A' %></small>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-4">
+                            <i class="fas fa-receipt display-4 text-muted"></i>
+                            <p class="mt-2 text-muted">No recent transactions</p>
+                        </div>
+                    <% } %>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="/customer/transactions" class="btn btn-outline-primary btn-sm">View All Transactions</a>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> Account Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total Deposits:</span>
+                        <strong class="text-success">$<%= typeof totalDeposits !== 'undefined' && totalDeposits ? totalDeposits.toFixed(2) : '0.00' %></strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total Withdrawals:</span>
+                        <strong class="text-danger">$<%= typeof totalWithdrawals !== 'undefined' && totalWithdrawals ? totalWithdrawals.toFixed(2) : '0.00' %></strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total Transfers:</span>
+                        <strong class="text-primary">$<%= typeof totalTransfers !== 'undefined' && totalTransfers ? totalTransfers.toFixed(2) : '0.00' %></strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span>Monthly Average:</span>
+                        <strong>$<%= typeof monthlyAverage !== 'undefined' && monthlyAverage ? monthlyAverage.toFixed(2) : '0.00' %></strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% } else { %>
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-warning text-center">
+                <i class="fas fa-exclamation-triangle display-4 d-block mb-3"></i>
+                <h4>Account Not Found</h4>
+                <p>We couldn't find your account information. Please contact support for assistance.</p>
+                <a href="/auth/logout" class="btn btn-primary">Logout</a>
+            </div>
+        </div>
+    </div>
+    <% } %>
+</div>
+
+<%- include('../partials/footer') %>

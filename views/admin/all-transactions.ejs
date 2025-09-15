@@ -1,0 +1,96 @@
+<style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .transfer-card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .verification-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .summary-card {
+            background: linear-gradient(135deg, #17a2b8, #007bff);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="d-flex flex-column p-3 text-white">
+                    <h4 class="mb-4"><i class="fas fa-university me-2"></i>Banking</h4>
+                    <ul class="nav nav-pills flex-column mb-auto">
+                        <li class="nav-item mb-2">
+                            <a href="/customer/dashboard" class="nav-link text-white">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="/customer/transfer" class="nav-link text-white active">
+                                <i class="fas fa-paper-plane me-2"></i>Transfer Money
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="/customer/transactions" class="nav-link text-white">
+                                <i class="fas fa-history me-2"></i>Transaction History
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="/logout" class="nav-link text-white">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-paper-plane me-2"></i>Transfer Money</h2>
+                    <div class="text-muted">
+                        Available Balance: <strong>₹<%= account ? account.balance.toLocaleString() : '0' %></strong>
+                    </div>
+                </div>
+
+                <!-- Error Alert -->
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i><%= error %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <% } %>
+
+                <!-- Success Alert -->
+                <% if (typeof success !== 'undefined' && success) { %>
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i><%= success %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <% } %>
+
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="card transfer-card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Money Transfer</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <form method="POST" action="/customer/transfer" id="transferForm">
+                                    <!-- Account Number Input -->
+                                    <div class="mb

@@ -1,0 +1,105 @@
+<%- include('partials/header', { title: 'Error - SecureBank' }) %>
+
+<div class="error-page">
+    <div class="container">
+        <div class="row justify-content-center align-items-center min-vh-100">
+            <div class="col-lg-6 col-md-8">
+                <div class="error-card">
+                    <div class="error-animation">
+                        <% if (error && error.status === 404) { %>
+                            <div class="error-icon-404">
+                                <i class="fas fa-search"></i>
+                            </div>
+                        <% } else if (error && error.status === 403) { %>
+                            <div class="error-icon-403">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                        <% } else if (error && error.status === 500) { %>
+                            <div class="error-icon-500">
+                                <i class="fas fa-server"></i>
+                            </div>
+                        <% } else { %>
+                            <div class="error-icon-general">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                        <% } %>
+                    </div>
+                    
+                    <div class="error-content text-center">
+                        <h1 class="error-code">
+                            <%= (error && error.status) || 500 %>
+                        </h1>
+                        
+                        <h2 class="error-title">
+                            <% if (error && error.status === 404) { %>
+                                Page Not Found
+                            <% } else if (error && error.status === 403) { %>
+                                Access Denied
+                            <% } else if (error && error.status === 500) { %>
+                                Server Error
+                            <% } else { %>
+                                Something Went Wrong
+                            <% } %>
+                        </h2>
+                        
+                        <p class="error-message">
+                            <%= message || 'An unexpected error occurred. Please try again later.' %>
+                        </p>
+                        
+                        <div class="error-suggestions">
+                            <% if (error && error.status === 404) { %>
+                                <p class="suggestion">The page you're looking for might have been moved or deleted.</p>
+                            <% } else if (error && error.status === 403) { %>
+                                <p class="suggestion">You don't have permission to access this resource.</p>
+                            <% } else { %>
+                                <p class="suggestion">Our team has been notified and is working to fix this issue.</p>
+                            <% } %>
+                        </div>
+                        
+                        <div class="error-actions">
+                            <button onclick="history.back()" class="btn btn-outline-primary me-3">
+                                <i class="fas fa-arrow-left me-2"></i>Go Back
+                            </button>
+                            <a href="/" class="btn btn-primary">
+                                <i class="fas fa-home me-2"></i>Home Page
+                            </a>
+                        </div>
+                        
+                        <% if (typeof user !== 'undefined' && user) { %>
+                            <div class="user-actions mt-4">
+                                <p class="text-muted">Or visit your dashboard:</p>
+                                <% if (user.role === 'admin') { %>
+                                    <a href="/admin/dashboard" class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                                    </a>
+                                <% } else { %>
+                                    <a href="/customer/dashboard" class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Customer Dashboard
+                                    </a>
+                                <% } %>
+                            </div>
+                        <% } %>
+                    </div>
+                    
+                    <!-- Help Section -->
+                    <div class="error-help">
+                        <div class="help-card">
+                            <h6><i class="fas fa-question-circle me-2"></i>Need Help?</h6>
+                            <p>If you continue to experience issues, please contact our support team.</p>
+                            <div class="help-links">
+                                <a href="mailto:support@securebank.com" class="help-link">
+                                    <i class="fas fa-envelope me-2"></i>Email Support
+                                </a>
+                                <a href="tel:1-800-SECURE-BANK" class="help-link">
+                                    <i class="fas fa-phone me-2"></i>Call Support
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

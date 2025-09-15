@@ -1,0 +1,96 @@
+                                        <div class="col-12">
+                                            <strong>Total Amount:</strong> ₹<span id="summaryTotal">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-check mt-3">
+                                <input type="checkbox" class="form-check-input" id="confirmTransfer" required>
+                                <label class="form-check-label" for="confirmTransfer">
+                                    I confirm that all details are correct and authorize this transfer
+                                </label>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg w-100" disabled id="transferButton">
+                                    <i class="fas fa-paper-plane me-2"></i>Transfer Money
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Transfer form functionality
+let recipientVerified = false;
+
+function verifyAccount() {
+    const accountNumber = document.getElementById('accountNumber').value;
+    if (!accountNumber || accountNumber.length !== 10) {
+        alert('Please enter a valid 10-digit account number');
+        return;
+    }
+    
+    fetch('/customer/verify-account', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ accountNumber })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('recipientName').textContent = data.account.userId.name;
+            document.getElementById('verifiedAccountNumber').textContent = data.account.accountNumber;
+            document.getElementById('accountVerification').style.display = 'block';
+            recipientVerified = true;
+            updateTransferSummary();
+        } else {
+            alert('Account not found or invalid');
+            document.getElementById('accountVerification').style.display = 'none';
+            recipientVerified = false;
+        }
+    })
+    .catch(error => {
+        alert('Error verifying account. Please try again.');
+        recipientVerified = false;
+    });
+}
+
+function updateTransferSummary() {
+    const amount = document.getElementById('amount').value;
+    const accountNumber = document.getElementById('accountNumber').value;
+    const recipientName = document.getElementById('recipientName').textContent;
+    
+    if (recipientVerified && amount && accountNumber) {
+        document.getElementById('summaryRecipientName').textContent = recipientName;
+        document.getElementById('summaryAccountNumber').textContent = accountNumber;
+        document.getElementById('summaryAmount').textContent = parseFloat(amount).toLocaleString();
+        document.getElementById('summaryTotal').textContent = parseFloat(amount).toLocaleString();
+        document.getElementById('transferSummary').style.display = 'block';
+    } else {
+        document.getElementById('transferSummary').style.display = 'none';
+    }
+    
+    updateTransferButton();
+}
+
+function updateTransferButton() {
+    const confirmCheck = document.getElementById('confirmTransfer').checked;
+    const transferButton = document.getElementById('transferButton');
+    
+    transferButton.disabled = !(recipientVerified && confirmCheck);
+}
+
+// Event listeners
+document.getElementById('amount').addEventListener('input', updateTransferSummary);
+document.getElementById('confirmTransfer').addEventListener('change', updateTransferButton);
+</script>
+
+<%- include('../partials/footer') %>

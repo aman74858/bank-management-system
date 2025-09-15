@@ -1,0 +1,171 @@
+<%- include('../partials/header', { title: 'Dashboard - SecureBank' }) %>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4"><i class="bi bi-speedometer2"></i> Customer Dashboard</h2>
+            
+            <% if (error) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+            
+            <% if (success) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill"></i> <%= success %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Account Summary -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-wallet2"></i> Account Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong>Account Number:</strong> <%= user.account.accountNumber %>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Account Type:</strong> 
+                                <span class="badge bg-info">Savings Account</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Account Status:</strong> 
+                                <span class="badge bg-<%= user.account.status === 'active' ? 'success' : user.account.status === 'pending' ? 'warning' : 'danger' %>">
+                                    <%= user.account.status.charAt(0).toUpperCase() + user.account.status.slice(1) %>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong>Account Holder:</strong> <%= user.name %>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Email:</strong> <%= user.email %>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Member Since:</strong> <%= user.createdAt.toLocaleDateString() %>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="balance-display text-center py-4">
+                        <h6 class="text-muted">Available Balance</h6>
+                        <h1 class="display-4 fw-bold">$<%= user.account.balance.toFixed(2) %></h1>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3">
+                            <a href="/customer/deposit" class="btn btn-success btn-lg w-100 py-3">
+                                <i class="bi bi-arrow-down-circle display-6 d-block mb-2"></i>
+                                Deposit
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="/customer/withdraw" class="btn btn-danger btn-lg w-100 py-3">
+                                <i class="bi bi-arrow-up-circle display-6 d-block mb-2"></i>
+                                Withdraw
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="/customer/transfer" class="btn btn-primary btn-lg w-100 py-3">
+                                <i class="bi bi-arrow-left-right display-6 d-block mb-2"></i>
+                                Transfer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Transactions -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Transactions</h5>
+                </div>
+                <div class="card-body p-0">
+                    <% if (transactions && transactions.length > 0) { %>
+                        <div class="list-group list-group-flush">
+                            <% transactions.forEach(transaction => { %>
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">
+                                            <span class="badge bg-<%= 
+                                                transaction.type === 'deposit' ? 'success' : 
+                                                transaction.type === 'withdrawal' ? 'danger' : 'primary'
+                                            %>">
+                                                <%= transaction.type %>
+                                            </span>
+                                        </h6>
+                                        <small class="text-<%= 
+                                            transaction.type === 'deposit' ? 'success' : 
+                                            transaction.type === 'withdrawal' ? 'danger' : 'primary'
+                                        %>">
+                                            <%= transaction.type === 'withdrawal' ? '-' : '+' %>$<%= transaction.amount.toFixed(2) %>
+                                        </small>
+                                    </div>
+                                    <p class="mb-1 small"><%= transaction.description %></p>
+                                    <small class="text-muted"><%= transaction.timestamp.toLocaleDateString() %></small>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-4">
+                            <i class="bi bi-receipt display-4 text-muted"></i>
+                            <p class="mt-2 text-muted">No recent transactions</p>
+                        </div>
+                    <% } %>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="/transaction/history" class="btn btn-outline-primary btn-sm">View All Transactions</a>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Account Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total Deposits:</span>
+                        <strong class="text-success">$0.00</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total Withdrawals:</span>
+                        <strong class="text-danger">$0.00</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total Transfers:</span>
+                        <strong class="text-primary">$0.00</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span>Monthly Average:</span>
+                        <strong>$0.00</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

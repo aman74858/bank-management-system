@@ -1,0 +1,93 @@
+<%- include('../partials/header', { title: 'Login - SecureBank' }) %>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4><i class="bi bi-bank"></i> SecureBank Login</h4>
+                </div>
+                <div class="card-body p-4">
+                    <% if (typeof error !== 'undefined') { %>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    <% } %>
+                    
+                    <% if (typeof message !== 'undefined') { %>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill"></i> <%= message %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    <% } %>
+
+                    <form action="/login" method="POST">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">Remember me</label>
+                            <a href="/forgot-password" class="float-end text-decoration-none">Forgot Password?</a>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <hr>
+                    
+                    <div class="text-center">
+                        <p>Don't have an account? <a href="/signup" class="text-decoration-none">Sign up here</a></p>
+                    </div>
+                </div>
+                <div class="card-footer text-center py-3">
+                    <small class="text-muted">
+                        <i class="bi bi-shield-check"></i> Your information is securely encrypted
+                    </small>
+                </div>
+            </div>
+            
+            <div class="mt-4 p-3 bg-light rounded text-center">
+                <h5>Demo Accounts</h5>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">Admin Account</h6>
+                                <p class="card-text small">Email: admin@securebank.com<br>Password: admin123</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">Customer Account</h6>
+                                <p class="card-text small">Email: customer@securebank.com<br>Password: customer123</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

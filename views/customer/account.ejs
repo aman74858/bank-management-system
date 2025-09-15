@@ -1,0 +1,178 @@
+
+<!-- ===================================================================================== -->
+<!-- account.ejs -->
+<%- include('../partials/header', { title: 'Account Details - SecureBank' }) %>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4"><i class="fas fa-wallet"></i> Account Details</h2>
+            
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle"></i> <%= error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <% if (typeof user !== 'undefined' && user && typeof user.account !== 'undefined' && user.account) { %>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong>Account Number:</strong> 
+                                <span class="float-end"><%= user.account.accountNumber || 'N/A' %></span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Account Type:</strong> 
+                                <span class="float-end badge bg-info">Savings Account</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Account Status:</strong> 
+                                <span class="float-end badge bg-<%= (user.account.status === 'active') ? 'success' : (user.account.status === 'pending') ? 'warning' : 'danger' %>">
+                                    <%= user.account.status ? user.account.status.charAt(0).toUpperCase() + user.account.status.slice(1) : 'Unknown' %>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong>Current Balance:</strong> 
+                                <span class="float-end">$<%= user.account.balance ? user.account.balance.toFixed(2) : '0.00' %></span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Available Balance:</strong> 
+                                <span class="float-end">$<%= user.account.balance ? user.account.balance.toFixed(2) : '0.00' %></span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Account Opened:</strong> 
+                                <span class="float-end"><%= user.account.createdAt ? user.account.createdAt.toLocaleDateString() : 'N/A' %></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-user"></i> Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong>Full Name:</strong> 
+                                <span class="float-end"><%= user.name || 'N/A' %></span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Email Address:</strong> 
+                                <span class="float-end"><%= user.email || 'N/A' %></span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Phone Number:</strong> 
+                                <span class="float-end">+1 (555) 123-4567</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong>Address:</strong> 
+                                <span class="float-end">123 Main St, Anytown</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>City/State:</strong> 
+                                <span class="float-end">Anytown, CA 12345</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Member Since:</strong> 
+                                <span class="float-end"><%= user.createdAt ? user.createdAt.toLocaleDateString() : 'N/A' %></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button class="btn btn-outline-primary me-2">
+                            <i class="fas fa-edit"></i> Update Profile
+                        </button>
+                        <button class="btn btn-outline-secondary">
+                            <i class="fas fa-shield-alt"></i> Security Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-light text-center">
+                    <h5 class="mb-0">Account Balance</h5>
+                </div>
+                <div class="card-body text-center py-4">
+                    <h1 class="display-4 fw-bold text-success">$<%= user.account.balance ? user.account.balance.toFixed(2) : '0.00' %></h1>
+                    <p class="text-muted">Available Balance</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-tachometer-alt"></i> Account Usage</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <span>Monthly Transactions</span>
+                        <div class="progress mb-2">
+                            <div class="progress-bar" role="progressbar" style="width: 35%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <span>Transfer Limit</span>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 65%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <span>Withdrawal Limit</span>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 20%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-question-circle"></i> Need Help?</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Contact our customer support for assistance with your account.</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-phone"></i> 1-800-SECURE-BANK</li>
+                        <li><i class="fas fa-envelope"></i> support@securebank.com</li>
+                        <li><i class="fas fa-comments"></i> Live Chat Available 24/7</li>
+                    </ul>
+                    <a href="/contact" class="btn btn-outline-primary w-100">Contact Support</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% } else { %>
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-warning text-center">
+                <i class="fas fa-exclamation-triangle display-4 d-block mb-3"></i>
+                <h4>Account Not Found</h4>
+                <p>We couldn't find your account information. Please contact support for assistance.</p>
+                <a href="/auth/logout" class="btn btn-primary">Logout</a>
+            </div>
+        </div>
+    </div>
+    <% } %>
+</div>
+
+<%- include('../partials/footer') %>

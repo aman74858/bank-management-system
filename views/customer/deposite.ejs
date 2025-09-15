@@ -1,0 +1,102 @@
+<%- include('../partials/header', { title: 'Deposit Money - SecureBank' }) %>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0"><i class="bi bi-arrow-down-circle"></i> Deposit Money</h3>
+                </div>
+                <div class="card-body">
+                    <% if (error) { %>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    <% } %>
+                    
+                    <% if (success) { %>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill"></i> <%= success %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    <% } %>
+                    
+                    <div class="mb-4 text-center">
+                        <div class="balance-display">
+                            <h6 class="text-muted">Current Balance</h6>
+                            <h2 class="display-5 fw-bold text-success">$<%= user.account.balance.toFixed(2) %></h2>
+                        </div>
+                    </div>
+                    
+                    <form action="/customer/deposit" method="POST">
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount to Deposit</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="amount" name="amount" 
+                                       placeholder="Enter amount" step="0.01" min="1" required>
+                            </div>
+                            <div class="form-text">Minimum deposit amount is $1.00</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="2" placeholder="Add a note about this deposit"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Deposit Method</label>
+                            <div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="method" id="methodBank" value="bank" checked>
+                                    <label class="form-check-label" for="methodBank">
+                                        <i class="bi bi-bank"></i> Bank Transfer
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="method" id="methodCard" value="card">
+                                    <label class="form-check-label" for="methodCard">
+                                        <i class="bi bi-credit-card"></i> Credit/Debit Card
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="method" id="methodCash" value="cash">
+                                    <label class="form-check-label" for="methodCash">
+                                        <i class="bi bi-cash"></i> Cash Deposit
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-arrow-down-circle"></i> Deposit Money
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>
+                        <i class="bi bi-info-circle"></i> Deposits may take 1-2 business days to process depending on the method.
+                    </small>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Deposits</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-3">
+                        <i class="bi bi-receipt display-4 text-muted"></i>
+                        <p class="mt-2 text-muted">No recent deposits</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

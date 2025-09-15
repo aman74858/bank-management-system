@@ -1,0 +1,131 @@
+<%- include('../partials/header', { title: 'Sign Up - SecureBank' }) %>
+
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <div class="auth-logo">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h2 class="auth-title">Join SecureBank</h2>
+                        <p class="auth-subtitle">Create your account and start banking with us</p>
+                    </div>
+                    
+                    <div class="auth-body">
+                        <% if (error) { %>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <%= error %>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        <% } %>
+                        
+                        <form action="/auth/signup" method="POST" class="auth-form" id="signupForm">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control" id="name" name="name" 
+                                               placeholder="Full Name" required minlength="2">
+                                        <label for="name">
+                                            <i class="fas fa-user me-2"></i>Full Name
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-floating mb-3">
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="name@example.com" required>
+                                <label for="email">
+                                    <i class="fas fa-envelope me-2"></i>Email Address
+                                </label>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <input type="password" class="form-control" id="password" name="password" 
+                                               placeholder="Password" required minlength="6">
+                                        <label for="password">
+                                            <i class="fas fa-lock me-2"></i>Password
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <input type="password" class="form-control" id="confirmPassword" 
+                                               name="confirmPassword" placeholder="Confirm Password" required>
+                                        <label for="confirmPassword">
+                                            <i class="fas fa-lock me-2"></i>Confirm Password
+                                        </label>
+                                        <div class="invalid-feedback">
+                                            Passwords do not match
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Password Strength Indicator -->
+                            <div class="password-strength mb-3" id="passwordStrength" style="display: none;">
+                                <div class="strength-meter">
+                                    <div class="strength-meter-fill" id="strengthMeterFill"></div>
+                                </div>
+                                <div class="strength-text" id="strengthText"></div>
+                            </div>
+                            
+                            <div class="form-check mb-4">
+                                <input type="checkbox" class="form-check-input" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="#" class="text-primary text-decoration-none">Terms and Conditions</a> 
+                                    and <a href="#" class="text-primary text-decoration-none">Privacy Policy</a>
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 mb-3 btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </button>
+                        </form>
+                        
+                        <div class="auth-divider">
+                            <span>Already have an account?</span>
+                        </div>
+                        
+                        <div class="text-center">
+                            <a href="/auth/login" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign In Instead
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Features -->
+                    <div class="signup-benefits">
+                        <h6><i class="fas fa-star me-2"></i>What you get with SecureBank</h6>
+                        <ul class="benefits-list">
+                            <li><i class="fas fa-check text-success me-2"></i>₹1,000 welcome bonus</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Zero account opening charges</li>
+                            <li><i class="fas fa-check text-success me-2"></i>24/7 customer support</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Mobile banking app</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Password confirmation validation
+document.getElementById('confirmPassword').addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = this.value;
+
+    if (confirmPassword !== password) {
+        this.setCustomValidity("Passwords do not match");
+    } else {
+        this.setCustomValidity("");
+    }
+});
+
+</script>
